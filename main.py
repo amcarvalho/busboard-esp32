@@ -21,6 +21,13 @@ except ValueError:
     DEFAULT_LIMIT = 5
 
 
+def _truncate_destination(name):
+    """Return destination text up to the first comma (trimmed)."""
+    if not isinstance(name, str):
+        return name
+    return name.split(',', 1)[0].strip()
+
+
 def get_next_buses(limit=None):
     if limit is None:
         limit = DEFAULT_LIMIT
@@ -50,7 +57,7 @@ def get_next_buses(limit=None):
         seen_routes.add(route)
         buses.append({
             "route": route,
-            "destination": a["destinationName"],
+            "destination": _truncate_destination(a["destinationName"]),
             "due_in_minutes": max(a["timeToStation"] // 60, 0),
         })
         if len(buses) == limit:
