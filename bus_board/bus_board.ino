@@ -11,6 +11,10 @@
  *     • Due ≤ 5 minutes    -> ORANGE
  *     • Due > 5 minutes    -> GREEN
  * - Animates rows only when the list of routes/destinations changes
+ * - Bottom row split into 3 columns:
+ *     Left: current London time HH:MM:SS
+ *     Center: countdown to next fetch
+ *     Right: last successful fetch HH:MM:SS
  */
 
 #include <Arduino_GFX_Library.h>
@@ -18,7 +22,8 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
-#include "secrets.h"  // <--- contains WiFi, server URL, TARGET_ROUTE
+#include <time.h>
+#include "secrets.h"  // WiFi, SERVER_URL, TARGET_ROUTE
 
 // ================= PINS =================
 #define TFT_CS    7
@@ -40,6 +45,8 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800);
 
 // ================= CONSTANTS ===========
 const int SCREEN_WIDTH = 320;
+const int BOTTOM_ROW_Y = 155;
+const int BOTTOM_ROW_HEIGHT = 15;
 
 // ================= STATE =================
 struct BusRow {
@@ -50,6 +57,8 @@ struct BusRow {
 
 BusRow previousRows[5];
 int previousCount = 0;
+
+time_t lastFetchTime = 0;  // store last successful fetch time
 
 // ================= SETUP ================
 void setup() {
@@ -86,19 +95,18 @@ void setup() {
   Serial.println(WiFi.localIP());
   delay(1000);
 
+  // Configure NTP for Europe/London
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+  setenv("TZ", "Europe/London", 1);
+  tzset();
+
   fetchAndDisplayBuses(true); // initial fetch, animate all
 }
 
 // ================= LOOP =================
 void loop() {
   for (int i = 15; i > 0; i--) {
-    gfx->fillRect(200, 155, 120, 15, 0x0000);
-    gfx->setTextSize(1);
-    gfx->setTextColor(0xFD20);
-    gfx->setCursor(200, 155);
-    gfx->print("Update ");
-    gfx->print(i);
-    gfx->print("s");
+    drawBottomRow(i); // draw current time, countdown, last fetch
     delay(1000);
   }
 
@@ -166,8 +174,8 @@ void fetchAndDisplayBuses(bool forceAnimate) {
   previousCount = count;
   for (int i = 0; i < count; i++) previousRows[i] = currentRows[i];
 
-  // Clear screen
-  gfx->fillScreen(0x0000);
+  // Clear screen except bottom row
+  gfx->fillRect(0, 0, SCREEN_WIDTH, BOTTOM_ROW_Y, 0x0000);
 
   bool hasTargetRoute = false;
   int earliestDue = 999;
@@ -197,6 +205,7 @@ void fetchAndDisplayBuses(bool forceAnimate) {
     y += rowHeight;
   }
 
+  lastFetchTime = time(nullptr); // update last fetch on success
   updateLED(hasTargetRoute, earliestDue);
 }
 
@@ -235,6 +244,41 @@ void updateLED(bool hasTarget, int due) {
 
   strip.fill(color);
   strip.show();
+}
+
+// ================= BOTTOM ROW ==================
+void drawBottomRow(int countdown) {
+  gfx->fillRect(0, BOTTOM_ROW_Y, SCREEN_WIDTH, BOTTOM_ROW_HEIGHT, 0x0000);
+  gfx->setTextSize(1);
+  gfx->setTextColor(0xFD20);
+
+  // Current time (left)
+  time_t now = time(nullptr);
+  struct tm timeinfo;
+  localtime_r(&now, &timeinfo);
+  char buf[9];
+  snprintf(buf, sizeof(buf), "%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+  gfx->setCursor(5, BOTTOM_ROW_Y);
+  gfx->print(buf);
+
+  // Countdown (center)
+  String cdText = "Update " + String(countdown) + "s";
+  int16_t x1, y1;
+  uint16_t w, h;
+  gfx->getTextBounds(cdText, 0, 0, &x1, &y1, &w, &h);
+  int centerX = (SCREEN_WIDTH - w) / 2;
+  gfx->setCursor(centerX, BOTTOM_ROW_Y);
+  gfx->print(cdText);
+
+  // Last fetch (right)
+  if (lastFetchTime != 0) {
+    localtime_r(&lastFetchTime, &timeinfo);
+    snprintf(buf, sizeof(buf), "%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+    gfx->getTextBounds(buf, 0, 0, &x1, &y1, &w, &h);
+    int rightX = SCREEN_WIDTH - 5 - w;  // fixed right margin
+    gfx->setCursor(rightX, BOTTOM_ROW_Y);
+    gfx->print(buf);
+  }
 }
 
 // ================= ERROR ================
