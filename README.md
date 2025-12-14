@@ -64,12 +64,3 @@ docker build -t busboard-esp32 .
 docker run -e TFL_APP_ID="$TFL_APP_ID" -e TFL_APP_KEY="$TFL_APP_KEY" \
   -e TFL_STOP_ID="$TFL_STOP_ID" -e TFL_RESULTS_LIMIT=5 -p 8000:8000 busboard-esp32
 ```
-
-CI / GitHub Actions guidance
-- Do not commit secret files. Use GitHub repository secrets and pass them into the runner or as BuildKit secrets.
-- Example: build & push to ghcr.io on push to main/master (use workflow secrets). Avoid copying any local `.env` or `secrets.h` in the Dockerfile.
-
-If you need, I can:
-- Add/modify .gitignore
-- Update Dockerfile to remove any COPY of secret files and optionally use BuildKit --secret
-- Create a GitHub Actions workflow that uses repository secrets to pass the runtime env or build-time secrets safely.
