@@ -14,8 +14,17 @@ app = Flask(__name__)
 CACHE_SECONDS = 20
 _CACHE = {"timestamp": 0, "data": []}
 
+# New: default number of results, configurable via env var TFL_RESULTS_LIMIT (defaults to 5)
+try:
+    DEFAULT_LIMIT = int(os.getenv("TFL_RESULTS_LIMIT", "5"))
+except ValueError:
+    DEFAULT_LIMIT = 5
 
-def get_next_buses(limit=3):
+
+def get_next_buses(limit=None):
+    if limit is None:
+        limit = DEFAULT_LIMIT
+
     now = time.time()
     if now - _CACHE["timestamp"] < CACHE_SECONDS:
         return _CACHE["data"]
