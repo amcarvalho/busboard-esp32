@@ -1,0 +1,25 @@
+{
+  "folders": [
+    {
+      "name": "Backend (Python)",
+      "path": "backend"
+    },
+    {
+      "name": "Mobile (Flutter)",
+      "path": "mobile"
+    },
+    {
+      "name": "Firmware (ESP32)",
+      "path": "firmware"
+    }
+  ],
+
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder:Backend (Python)}/.venv/bin/python",
+    "python.analysis.typeCheckingMode": "basic",
+
+    "dart.flutterSdkPath": "/Users/amcarvalho/flutter",
+    "dart.previewFlutterUiGuides": true,
+    "dart.previewFlutterUiGuidesCustomTracking": true
+  }
+}
