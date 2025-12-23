@@ -1,0 +1,71 @@
+############################################
+# General / OS / Editors
+############################################
+.DS_Store
+*.log
+*.swp
+*.class
+*.pyc
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+############################################
+# IntelliJ / Android Studio / VSCode
+############################################
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+############################################
+# Python (backend)
+############################################
+__pycache__/
+backend/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+backend/.venv/
+backend/venv/
+
+############################################
+# Flutter / Dart (mobile)
+############################################
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+coverage/
+**/doc/api/
+
+# Flutter build output
+mobile/build/
+build/
+
+############################################
+# Flutter platform-specific generated files
+############################################
+
+# Android (Flutter)
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/debug/
+mobile/android/app/profile/
+mobile/android/app/release/
+
+# iOS (Flutter)
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/App.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/ephemeral/
+mobile/ios/Flutter/.last_build_id
+
+# Desktop platforms (Flutter)
+mobile/linux/flutter/ephemeral/
+mobile/maco
